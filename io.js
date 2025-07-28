@@ -12,7 +12,7 @@ var privateChat = []
 exports.init = async function(
     server
 ) {
-    io = new Server(server)
+    io = new Server(server, { addTrailingSlash: false })
 
     io.on("connection", (socket) => {
         socket.on("initPublic", () => {

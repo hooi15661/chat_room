@@ -2,7 +2,6 @@
   "name": "chat-room",
   "version": "1.0.0",
   "scripts": {
-    "start": "npm install",
     "start": "node server.js"
   },
   "dependencies": {
