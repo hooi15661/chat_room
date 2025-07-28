@@ -12,7 +12,11 @@ var privateChat = []
 exports.init = async function(
     server
 ) {
-    io = new Server(server, { addTrailingSlash: false })
+    io = new Server(server, { cors: {
+                                        origin: "https://chat-room-6zpk.vercel.app/",
+                                        methods: ["GET", "POST"],
+                                        credentials: true
+    } })
 
     io.on("connection", (socket) => {
         socket.on("initPublic", () => {
