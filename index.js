@@ -135,7 +135,6 @@ function privateSend() {
 
 //--------------------------------------------------------------------------------------------------
 function triggerUpload(type) {
-    console.log(type)
     switch (type) {
         case "Public":
             publicUploader.click()
@@ -173,7 +172,7 @@ async function imageUpload(type, file) {
                 body: JSON.stringify(temp)
             }
 
-            let res = fetch("http://localhost:8080/uploadImage", obj)
+            let res = fetch("/uploadImage", obj)
         }
         img.src = e.target.result
     }

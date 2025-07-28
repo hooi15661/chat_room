@@ -103,7 +103,7 @@ exports.uploadImage = async function(
     }
 
     var buffer = Buffer.from(prop.image, "base64")
-    fs.writeFileSync("../www/images/" + targetFile, buffer)
+    fs.writeFileSync("./images/" + targetFile, buffer)
 
     if (prop.type == "Public") {
         publicChat.push({ id: "public_" + publicChat.length, name: (prop.name == "" ? "Anonymous" : prop.name), image: "images/" + targetFile })

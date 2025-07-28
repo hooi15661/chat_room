@@ -15,8 +15,8 @@ app.use(cors())
 app.use(express.json({ limit: "100mb" }))
 
 //--------------------------------------------------------------------------------------------------
-app.use("/", express.static("../www"))
-app.use("/images", express.static("../images"))
+app.use("/", express.static("./"))
+app.use("/images", express.static("./images"))
 
 //--------------------------------------------------------------------------------------------------
 app.post("/uploadImage", async (req, res, next) => { try {
