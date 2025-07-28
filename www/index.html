@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Chat Board</title>
+</head>
+<body style="background-color: powderblue;">
+    <h1>Chat Rooms</h1>
+
+    <hr/>
+
+    <h3>Public Room</h3>
+    <div id="publicChat" style="height: 400px; width: 90%; overflow-y: auto; border: 2px solid; padding: 0px 5px;"></div>
+    <br>
+    <div>
+        <input id="publicName" placeholder="Type name..."/>
+        <input id="publicInput" placeholder="Type message..."/>
+        <button onclick="publicSend()">Send</button>
+    </div>
+    <div>
+        <button id="publicUploadBtn" onclick="triggerUpload('Public')">Upload Image</button>
+        <input type="file" id="publicUploader" accept="image/*" style="display: none;"/>
+    </div>
+    <br>
+
+    <hr/>
+
+    <h3>Private Room</h3>
+    <div>
+        <button onclick="privateCreate()">Create Room</button>
+        <button onclick="privateJoin()">Join Room</button>
+    </div>
+    <div id="privateRoom" style="display: none;">
+        <h4 id="roomName"></h4>
+        <div id="privateChat" style="height: 400px; width: 90%; overflow-y: auto; border: 2px solid; padding: 0px 5px;"></div>
+        <br>
+
+        <div>
+            <input id="privateName" placeholder="Type name..."/>
+            <input id="privateInput" placeholder="Type message..."/>
+            <button onclick="privateSend()">Send</button>
+        </div>
+        <div>
+            <button id="privateUploadBtn" onclick="triggerUpload('Private')">Upload Image</button>
+            <input type="file" id="privateUploader" accept="image/*" style="display: none;"/>
+        </div>
+        <br>
+    </div>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script src="index.js"></script>
+</html>
