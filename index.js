@@ -19,10 +19,22 @@ var privateToken = null
 //--------------------------------------------------------------------------------------------------
 socket.emit("initPublic")
 
-socket.on("showChat", (type, token, chat, seeLast) => {
+socket.on("initMessages", (type, token, messages) => {
     if (type == "Private" && (!token || privateToken != token))
         return
-    showChat(type, chat, seeLast)
+    initMessages(type, messages)
+})
+
+socket.on("newMessage", (type, token, messages) => {
+    if (type == "Private" && (!token || privateToken != token))
+        return
+    newMessages(type, messages)
+})
+
+socket.on("editMessage", (type, token, messages) => {
+    if (type == "Private" && (!token || privateToken != token))
+        return
+    editMessages(type, messages)
 })
 
 socket.on("createdPrivate", (token) => {
@@ -30,6 +42,7 @@ socket.on("createdPrivate", (token) => {
 
     var privateRoom = document.getElementById("privateRoom")
     privateRoom.style.display = "block"
+    privateChat.innerHTML = ""
 
     var roomName = document.getElementById("roomName")
     roomName.innerHTML = "Room token: " + privateToken
@@ -44,7 +57,7 @@ socket.on("joinedPrivate", (room) => {
     var roomName = document.getElementById("roomName")
     roomName.innerHTML = "Room token: " + room.token
 
-    showChat("Private", room.chat, true)
+    initMessages("Private", room.chat)
 })
 
 socket.on("error", (error) => {
@@ -52,11 +65,11 @@ socket.on("error", (error) => {
 })
 
 //--------------------------------------------------------------------------------------------------
-function showChat(type, chat, seeLast) {
+function initMessages(type, messages) {
     var vChat = (type == "Public" ? publicChat : privateChat)
 
     vChat.innerHTML = ""
-    chat.forEach((v) => {
+    messages.forEach((v) => {
         let msg = document.createElement("p")
         msg.id = v.id
         if (v.image) {
@@ -66,8 +79,7 @@ function showChat(type, chat, seeLast) {
             img.style.width = "20%"
             img.onload = () => {
                 msg.appendChild(img)
-                if (seeLast)
-                    vChat.scrollTop = vChat.scrollHeight
+                vChat.scrollTop = vChat.scrollHeight
             }
         } else {
             msg.innerHTML = "<b>" + v.name + "</b>: " + v.message
@@ -79,8 +91,42 @@ function showChat(type, chat, seeLast) {
         vChat.appendChild(msg)
     })
 
-    if (seeLast)
-        vChat.scrollTop = vChat.scrollHeight
+    vChat.scrollTop = vChat.scrollHeight
+}
+
+//--------------------------------------------------------------------------------------------------
+function newMessages(type, message) {
+    var vChat = (type == "Public" ? publicChat : privateChat)
+
+    let msg = document.createElement("p")
+    msg.id = message.id
+    if (message.image) {
+        msg.innerHTML = "<b>" + message.name + "</b>: "
+        const img = document.createElement("img")
+        img.src = message.image
+        img.style.width = "20%"
+        img.onload = () => {
+            msg.appendChild(img)
+            vChat.scrollTop = vChat.scrollHeight
+        }
+    } else {
+        msg.innerHTML = "<b>" + message.name + "</b>: " + message.message
+        msg.style.overflowWrap = "break-word"
+        msg.onclick = () => {
+            editMessage(type, msg.id, msg.innerHTML)
+        }
+    }
+
+    vChat.appendChild(msg)
+    vChat.scrollTop = vChat.scrollHeight
+}
+
+//--------------------------------------------------------------------------------------------------
+function editMessages(type, message) {
+    var vChat = (type == "Public" ? publicChat : privateChat)
+
+    let msg = document.getElementById(message.id)
+    msg.innerHTML = "<b>" + message.name + "</b>: " + message.message
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -116,7 +162,8 @@ function privateCreate() {
 //--------------------------------------------------------------------------------------------------
 function privateJoin() {
     var token = prompt("Enter token", "")
-    socket.emit("joinPrivate", token)
+    if (token)
+        socket.emit("joinPrivate", token)
 }
 
 //--------------------------------------------------------------------------------------------------
