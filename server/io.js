@@ -115,10 +115,12 @@ exports.uploadImage = async function(
 ) {
     var targetFile = ""
     if (prop.type == "public") {
-        targetFile = "public_" + publicChat.length + ".jpeg"
+        //targetFile = "public_" + publicChat.length + ".jpeg"
+        targetFile = "public_" + new Date().getTime() + ".jpeg"
     } else {
         var index = privateChat.findIndex(v => v.token == prop.token)
-        targetFile = prop.token + "_" + privateChat[index].chat.length + ".jpeg"
+        //targetFile = prop.token + "_" + privateChat[index].chat.length + ".jpeg"
+        targetFile = prop.token + "_" + new Date().getTime() + ".jpeg"
     }
 
     var buffer = Buffer.from(prop.image, "base64")
