@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Chat Board</title>
+    <title>Chat Rooms</title>
 </head>
 <body style="background-color: powderblue;">
     <h1>Chat Rooms</h1>
@@ -11,15 +11,18 @@
     <hr/>
 
     <h3>Public Room</h3>
-    <div id="publicChat" style="height: 400px; width: 90%; overflow-y: auto; border: 2px solid; padding: 0px 5px;"></div>
+    <div style="width: 90%;">
+        <button onclick="clearMessages('public')" style="float: right;">Clear</button>
+        <div id="publicChat" style="height: 400px; width: 100%; overflow-y: auto; border: 2px solid; padding: 0px 5px;"></div>
+    </div>
     <br>
     <div>
         <input id="publicName" placeholder="Type name..."/>
         <input id="publicInput" placeholder="Type message..."/>
-        <button onclick="publicSend()">Send</button>
+        <button onclick="sendMessage('public')">Send</button>
     </div>
     <div>
-        <button id="publicUploadBtn" onclick="triggerUpload('Public')">Upload Image</button>
+        <button id="publicUploadBtn" onclick="triggerUpload('public')">Upload Image</button>
         <input type="file" id="publicUploader" accept="image/*" style="display: none;"/>
     </div>
     <br>
@@ -33,16 +36,18 @@
     </div>
     <div id="privateRoom" style="display: none;">
         <h4 id="roomName"></h4>
-        <div id="privateChat" style="height: 400px; width: 90%; overflow-y: auto; border: 2px solid; padding: 0px 5px;"></div>
+        <div style="width: 90%;">
+            <button onclick="clearMessages('private')" style="float: right;">Clear</button>
+            <div id="privateChat" style="height: 400px; width: 100%; overflow-y: auto; border: 2px solid; padding: 0px 5px;"></div>
+        </div>
         <br>
-
         <div>
             <input id="privateName" placeholder="Type name..."/>
             <input id="privateInput" placeholder="Type message..."/>
-            <button onclick="privateSend()">Send</button>
+            <button onclick="sendMessage('private')">Send</button>
         </div>
         <div>
-            <button id="privateUploadBtn" onclick="triggerUpload('Private')">Upload Image</button>
+            <button id="privateUploadBtn" onclick="triggerUpload('private')">Upload Image</button>
             <input type="file" id="privateUploader" accept="image/*" style="display: none;"/>
         </div>
         <br>

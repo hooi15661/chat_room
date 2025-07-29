@@ -17,19 +17,28 @@ exports.init = async function(
     io.on("connection", (socket) => {
         socket.on("initPublic", () => {
             socket.join("public")
-            io.to("public").emit("initMessages", "Public", null, publicChat)
+            io.to("public").emit("initMessages", "public", null, publicChat)
         })
 
         socket.on("sendPublic", (payload) => {
             publicChat.push({ id: "public_" + publicChat.length, name: (payload.name == "" ? "Anonymous" : payload.name), message: payload.input })
-            io.to("public").emit("newMessage", "Public", null, publicChat[publicChat.length - 1])
+            io.to("public").emit("newMessage", "public", null, publicChat[publicChat.length - 1])
         })
 
         socket.on("editPublic", (payload) => {
             var index = publicChat.findIndex(v => v.id == payload.id)
             if (index > -1)
                 publicChat[index].message = payload.replace
-            io.to("public").emit("editMessage", "Public", null, publicChat[index])
+            io.to("public").emit("editMessage", "public", null, publicChat[index])
+        })
+
+        socket.on("clearPublic", () => {
+            publicChat.forEach((v) => {
+                if (v.image)
+                    fs.unlinkSync(v.image)
+            })
+            publicChat = []
+            io.to("public").emit("initMessages", "public", null, [])
         })
 
         socket.on("createPrivate", () => {
@@ -72,7 +81,7 @@ exports.init = async function(
             var index = privateChat.findIndex(v => v.token == payload.token)
             if (index > -1) {
                 privateChat[index].chat.push({ id: privateChat[index].token + "_" + privateChat[index].chat.length, name: (payload.name == "" ? "Anonymous" : payload.name), message: payload.input })
-                io.to(parseInt(payload.token)).emit("newMessage", "Private", parseInt(payload.token), privateChat[index].chat[privateChat[index].chat.length - 1])
+                io.to(parseInt(payload.token)).emit("newMessage", "private", parseInt(payload.token), privateChat[index].chat[privateChat[index].chat.length - 1])
             }
         })
 
@@ -84,9 +93,19 @@ exports.init = async function(
                 var index2 = privateChat[index].chat.findIndex(v => v.id == payload.id)
                 if (index2 > -1) {
                     privateChat[index].chat[index2].message = payload.replace
-                    io.to(token).emit("editMessage", "Private", token, privateChat[index].chat[index2])
+                    io.to(token).emit("editMessage", "private", token, privateChat[index].chat[index2])
                 }
             }
+        })
+
+        socket.on("clearPrivate", (token) => {
+            var index = privateChat.findIndex(v => v.token == token)
+            privateChat[index].chat.forEach((v) => {
+                if (v.image)
+                    fs.unlinkSync(v.image)
+            })
+            privateChat[index].chat = []
+            io.to(token).emit("initMessages", "private", token, [])
         })
     })
 }
@@ -95,7 +114,7 @@ exports.uploadImage = async function(
     prop
 ) {
     var targetFile = ""
-    if (prop.type == "Public") {
+    if (prop.type == "public") {
         targetFile = "public_" + publicChat.length + ".jpeg"
     } else {
         var index = privateChat.findIndex(v => v.token == prop.token)
@@ -105,11 +124,11 @@ exports.uploadImage = async function(
     var buffer = Buffer.from(prop.image, "base64")
     fs.writeFileSync("./images/" + targetFile, buffer)
 
-    if (prop.type == "Public") {
+    if (prop.type == "public") {
         publicChat.push({ id: "public_" + publicChat.length, name: (prop.name == "" ? "Anonymous" : prop.name), image: "images/" + targetFile })
-        io.to("public").emit("newMessage", "Public", null, publicChat[publicChat.length - 1])
+        io.to("public").emit("newMessage", "public", null, publicChat[publicChat.length - 1])
     } else {
         privateChat[index].chat.push({ id: privateChat[index].token + "_" + privateChat[index].chat.length, name: (prop.name == "" ? "Anonymous" : prop.name), image: "images/" + targetFile })
-        io.to(parseInt(prop.token)).emit("newMessage", "Private", parseInt(prop.token), privateChat[index].chat[privateChat[index].chat.length - 1])
+        io.to(parseInt(prop.token)).emit("newMessage", "private", parseInt(prop.token), privateChat[index].chat[privateChat[index].chat.length - 1])
     }
 }

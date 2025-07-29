@@ -2,15 +2,12 @@
 const socket = io()
 
 //--------------------------------------------------------------------------------------------------
-const publicChat = document.getElementById("publicChat")
-const privateChat = document.getElementById("privateChat")
-const publicUploader = document.getElementById("publicUploader")
-publicUploader.addEventListener("change", (e) => {
-    imageUpload("Public", e.target.files[0])
+document.getElementById("publicUploader").addEventListener("change", (e) => {
+    imageUpload("public", e.target.files[0])
 })
-const privateUploader = document.getElementById("privateUploader")
-privateUploader.addEventListener("change", (e) => {
-    imageUpload("Private", e.target.files[0])
+
+document.getElementById("privateUploader").addEventListener("change", (e) => {
+    imageUpload("private", e.target.files[0])
 })
 
 //--------------------------------------------------------------------------------------------------
@@ -20,21 +17,21 @@ var privateToken = null
 socket.emit("initPublic")
 
 socket.on("initMessages", (type, token, messages) => {
-    if (type == "Private" && (!token || privateToken != token))
+    if (type == "private" && (!token || privateToken != token))
         return
     initMessages(type, messages)
 })
 
 socket.on("newMessage", (type, token, messages) => {
-    if (type == "Private" && (!token || privateToken != token))
+    if (type == "private" && (!token || privateToken != token))
         return
-    newMessages(type, messages)
+    newMessage(type, messages)
 })
 
 socket.on("editMessage", (type, token, messages) => {
-    if (type == "Private" && (!token || privateToken != token))
+    if (type == "private" && (!token || privateToken != token))
         return
-    editMessages(type, messages)
+    updateMessage(type, messages)
 })
 
 socket.on("createdPrivate", (token) => {
@@ -57,7 +54,7 @@ socket.on("joinedPrivate", (room) => {
     var roomName = document.getElementById("roomName")
     roomName.innerHTML = "Room token: " + room.token
 
-    initMessages("Private", room.chat)
+    initMessages("private", room.chat)
 })
 
 socket.on("error", (error) => {
@@ -66,7 +63,7 @@ socket.on("error", (error) => {
 
 //--------------------------------------------------------------------------------------------------
 function initMessages(type, messages) {
-    var vChat = (type == "Public" ? publicChat : privateChat)
+    var vChat = document.getElementById(type + "Chat")
 
     vChat.innerHTML = ""
     messages.forEach((v) => {
@@ -95,8 +92,8 @@ function initMessages(type, messages) {
 }
 
 //--------------------------------------------------------------------------------------------------
-function newMessages(type, message) {
-    var vChat = (type == "Public" ? publicChat : privateChat)
+function newMessage(type, message) {
+    var vChat = document.getElementById(type + "Chat")
 
     let msg = document.createElement("p")
     msg.id = message.id
@@ -122,22 +119,25 @@ function newMessages(type, message) {
 }
 
 //--------------------------------------------------------------------------------------------------
-function editMessages(type, message) {
-    var vChat = (type == "Public" ? publicChat : privateChat)
+function updateMessage(type, message) {
+    var vChat = document.getElementById(type + "Chat")
 
     let msg = document.getElementById(message.id)
     msg.innerHTML = "<b>" + message.name + "</b>: " + message.message
 }
 
 //--------------------------------------------------------------------------------------------------
-function publicSend() {
-    var name = document.getElementById("publicName")
-    var input = document.getElementById("publicInput")
+function sendMessage(type) {
+    var name = document.getElementById(type + "Name")
+    var input = document.getElementById(type + "Input")
 
     if (input.value == "")
         return
 
-    socket.emit("sendPublic", { name: name.value, input: input.value })
+    if (type == "public")
+        socket.emit("sendPublic", { name: name.value, input: input.value })
+    else
+        socket.emit("sendPrivate", { token: privateToken, name: name.value, input: input.value })
 
     name.value = ""
     input.value = ""
@@ -151,7 +151,14 @@ function editMessage(type, id, message) {
     var replace = prompt("Edit", temp2[1])
 
     if (replace)
-        socket.emit("edit" + type, { id: id, replace: replace })
+        socket.emit("edit" + (type.charAt(0).toUpperCase() + type.slice(1)), { id: id, replace: replace })
+}
+
+//--------------------------------------------------------------------------------------------------
+function clearMessages(type) {
+    socket.emit("clear" + (type.charAt(0).toUpperCase() + type.slice(1)), privateToken)
+
+    document.getElementById(type + "Chat").innerHTML = ""
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -167,30 +174,8 @@ function privateJoin() {
 }
 
 //--------------------------------------------------------------------------------------------------
-function privateSend() {
-    var name = document.getElementById("privateName")
-    var input = document.getElementById("privateInput")
-
-    if (input.value == "")
-        return
-
-    socket.emit("sendPrivate", { token: privateToken, name: name.value, input: input.value })
-
-    name.value = ""
-    input.value = ""
-}
-
-//--------------------------------------------------------------------------------------------------
 function triggerUpload(type) {
-    switch (type) {
-        case "Public":
-            publicUploader.click()
-            break
-
-        case "Private":
-            privateUploader.click()
-            break
-    }
+    document.getElementById(type + "Uploader").click()
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -210,8 +195,8 @@ async function imageUpload(type, file) {
 
             let imageData = canvas.toDataURL("image/jpeg").replace("data:image/jpeg;base64,", "")
 
-            let temp = { type: type, name: (type == "Public" ? document.getElementById("publicName").value : document.getElementById("privateName").value), image: imageData }
-            if (type == "Private")
+            let temp = { type: type, name: document.getElementById(type + "Name").value, image: imageData }
+            if (type == "private")
                 temp.token = privateToken
             let obj = {
                 method: "POST",
